@@ -36,6 +36,7 @@ classdef QPSKRx < matlab.System
         pFrameSync
         pDataDecod
         pBER
+        pMIMODecoder
      end
     
     properties (Access = private, Constant)
@@ -100,9 +101,13 @@ classdef QPSKRx < matlab.System
                 'DescramblerPolynomial', obj.DescramblerPolynomial, ...
                 'DescramblerInitialConditions', obj.DescramblerInitialConditions, ...
                 'PrintOption', obj.PrintOption);
+            
+            obj.pMIMODecoder = comm.OSTBCCombiner;
         end
                 
         function [RCRxSignal, fineCompSignal, timingRecBuffer,BER] = stepImpl(obj, bufferSignal)
+            
+            MIMOsignal = obj.pMIMODecoder(bufferSignal);
             
             AGCSignal = obj.DesiredAmplitude*obj.pAGC(bufferSignal);     % AGC control          
             RCRxSignal = obj.pRxFilter(AGCSignal);                       % Pass the signal through 

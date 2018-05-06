@@ -60,7 +60,7 @@ classdef QPSKChan < matlab.System
         function corruptSignal = stepImpl(obj, TxSignal, count)
             
             % MIMO channel
-            MIMOsig = obj.pMIMOChannel(TxSignal);
+            [MIMOsig, H] = obj.pMIMOChannel(TxSignal);
             
             % Calculates the delay 
             if strcmp(obj.DelayType,'Ramp')
