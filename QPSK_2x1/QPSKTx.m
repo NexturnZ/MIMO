@@ -18,6 +18,7 @@ classdef QPSKTx < matlab.System
         pBitGenerator
         pQPSKModulator 
         pTransmitterFilter
+        pMIMOEncoder
     end
     
     methods
@@ -38,13 +39,18 @@ classdef QPSKTx < matlab.System
                 'PhaseOffset', pi/4);
             obj.pTransmitterFilter = dsp.FIRInterpolator(obj.UpsamplingFactor, ...
                 obj.TransmitterFilterCoefficients);
+            obj.pMIMOEncoder = comm.OSTBCEncoder;
         end
         
         function transmittedSignal = stepImpl(obj)
            
             [transmittedData, ~] = obj.pBitGenerator();                % Generates the data to be transmitted           
-            modulatedData = obj.pQPSKModulator(transmittedData);       % Modulates the bits into QPSK symbols           
-            transmittedSignal = obj.pTransmitterFilter(modulatedData); % Square root Raised Cosine Transmit Filter
+            modulatedData = obj.pQPSKModulator(transmittedData);       % Modulates the bits into QPSK symbols
+            MIMOData = obj.pMIMOEncoder(modulatedData);
+            transmittedSignal1 = obj.pTransmitterFilter(MIMOData(:,1));
+            transmittedSignal2 = obj.pTransmitterFilter(MIMOData(:,2));
+            transmittedSignal = [transmittedSignal1,transmittedSignal2];
+%             transmittedSignal = obj.pTransmitterFilter(modulatedData); % Square root Raised Cosine Transmit Filter
         end
         
         function resetImpl(obj)

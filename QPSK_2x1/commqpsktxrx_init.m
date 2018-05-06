@@ -10,11 +10,11 @@ SimParams.Upsampling = 4; % Upsampling factor
 SimParams.Downsampling = 2; % Downsampling factor
 SimParams.Fs = 2e5; % Sample rate in Hertz
 SimParams.Ts = 1/SimParams.Fs; % Sample time in sec
-SimParams.FrameSize = 100; % Number of modulated symbols per frame
+SimParams.FrameSize = 100*2; % Number of modulated symbols per frame
 
 % Tx parameters
 SimParams.BarkerLength = 13; % Number of Barker code symbols
-SimParams.DataLength = (SimParams.FrameSize - SimParams.BarkerLength)*2; % Number of data payload bits per frame
+SimParams.DataLength = (SimParams.FrameSize/2 - SimParams.BarkerLength)*2; % Number of data payload bits per frame
 SimParams.ScramblerBase = 2;
 SimParams.ScramblerPolynomial = [1 1 1 0 1];
 SimParams.ScramblerInitialConditions = [0 0 0 0];

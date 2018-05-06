@@ -1,12 +1,11 @@
 close all; clear all;
 dbstop if error;
 %% Initialization
-% The <matlab:edit('commqpsktxrx_init.m') commqpsktxrx_init.m> script
-% initializes simulation parameters and generates the structure prmQPSKTxRx. 
-prmQPSKTxRx = commqpsktxrx_init % QPSK system parameters 
+
+prmQPSKTxRx = commqpsktxrx_init; % QPSK system parameters 
 
 useScopes = false; % true if scopes are to be used
-printReceivedData = true; %true if the received data is to be printed
+printReceivedData = false; %true if the received data is to be printed
 compileIt = false; % true if code is to be compiled
 useCodegen = false; % true to run the generated mex file
 %% Execution and Results
