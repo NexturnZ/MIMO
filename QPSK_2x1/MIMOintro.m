@@ -4,7 +4,7 @@ dbstop if error;
 % We start by defining some common simulation parameters
 frmLen = 100;       % frame length
 numPackets = 1000;  % number of packets
-EbNo = 0:2:18;      % Eb/No varying to 20 dB
+EbNo = 0:2:12;      % Eb/No varying to 20 dB
 maxNumErrs = 300;       % maximum number of errors
 maxNumPackets = 3000;   % maximum number of packets
 pLen = 8;               % number of pilot symbols per frame
@@ -86,7 +86,7 @@ for idx = 1:length(EbNo)
     while (ber_Estimate(2,idx) < maxNumErrs) && ...
           (ber_Estimate(3,idx)/frmLen < maxNumPackets)
         % Generate data vector per frame 
-        data = randi([0 P-1], frmLen, 1);
+        data = randi([0 M-1], frmLen, 1);
         
         % Modulate data
         modData = qpskMod(data);           
@@ -174,7 +174,7 @@ for idx = 1:length(EbNo)
     while (ber_Estimate(2,idx) < maxNumErrs) && ...
           (ber_Estimate(3,idx)/frmLen < maxNumPackets)
         % Generate data vector per frame 
-        data = randi([0 P-1], frmLen, 1);
+        data = randi([0 M-1], frmLen, 1);
         
         % Modulate data
         modData = qpskMod(data);           
@@ -217,7 +217,7 @@ end  % end of for loop for EbNo
 
 % Perform curve fitting and replot the results
 fitBEREst   = berfit(EbNo, ber_Estimate(1,:));
-semilogy(ax,EbNo, fitBEREst, 'ro-');
+semilogy(ax,EbNo, fitBEREst, 'bd-');
 % hold(ax,'off');
 
 % Restore default stream
@@ -225,12 +225,51 @@ rng(s)
 
 %% AWGN Channel
 
-N = 1;              % maximum number of Tx antennas
-M = 1;              % maximum number of Rx antennas
+% Release the hAWGN2Rx System object
+release(awgn2Rx);
 
-awgn1Rx = comm.AWGNChannel(...
-    'NoiseMethod', 'Signal to noise ratio (Eb/No)', ...
-    'SignalPower', 1);
+% Set the global random stream for repeatability
+s = rng(55408);
 
-%% SISO Rayleigh channel
+% Pre-allocate variables for speed
+ber_Estimate = zeros(3,length(EbNo));
 
+% Loop over several EbNo points
+for idx = 1:length(EbNo)
+    reset(errorCalc1);
+    reset(errorCalc2);
+    awgn2Rx.EbNo = EbNo(idx); 
+
+    % Loop till the number of errors exceed 'maxNumErrs'
+    % or the maximum number of packets have been simulated
+    while (ber_Estimate(2,idx) < maxNumErrs) && ...
+          (ber_Estimate(3,idx)/frmLen < maxNumPackets)
+        % Generate data vector per frame 
+        data = randi([0 M-1], frmLen, 1);
+        
+        % Modulate data
+        modData = qpskMod(data);           
+
+        % Add AWGN
+        rxSig = awgn2Rx(modData);
+        
+        % ML Detector (minimum Euclidean distance)
+        demodEst   = qpskDemod(rxSig);      % estimated  
+        
+        % Calculate and update BER for current EbNo value
+        %   for estimated channel
+        ber_Estimate(:,idx) = errorCalc1(data, demodEst);
+    
+    end % end of FOR loop for numPackets
+
+    % Plot results
+%     semilogy(ax,EbNo(1:idx), ber_Estimate(1,1:idx), 'k.');
+%     drawnow;
+end  % end of for loop for EbNo
+
+% Perform curve fitting and replot the results
+fitBEREst   = berfit(EbNo, ber_Estimate(1,:));
+semilogy(ax,EbNo, fitBEREst, 'r*-');
+
+% Restore default stream
+rng(s)
