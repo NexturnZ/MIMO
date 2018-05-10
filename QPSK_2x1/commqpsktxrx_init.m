@@ -17,7 +17,7 @@ SimParams.FrameSize = 100; % Number of modulated symbols per frame
 
 % Tx parameters
 SimParams.BarkerLength = 13; % Number of Barker code symbols
-SimParams.DataLength = (SimParams.FrameSize - SimParams.BarkerLength)*2-SimParams.pLen; % Number of data payload bits per frame
+SimParams.DataLength = (SimParams.FrameSize - SimParams.BarkerLength-SimParams.pLen)*2; % Number of data payload bits per frame
 SimParams.ScramblerBase = 2;
 SimParams.ScramblerPolynomial = [1 1 1 0 1];
 SimParams.ScramblerInitialConditions = [0 0 0 0];
