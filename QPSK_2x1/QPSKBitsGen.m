@@ -10,6 +10,8 @@ classdef QPSKBitsGen < matlab.System
         ScramblerBase = 2;
         ScramblerPolynomial = [1 1 1 0 1];
         ScramblerInitialConditions = [0 0 0 0];
+%         NumTxAntenna = 2;
+%         pLen = 8;                                    % length of pilot
     end
     
     properties (Access=private)
@@ -17,6 +19,7 @@ classdef QPSKBitsGen < matlab.System
         pScrambler
         pMsgStrSet
         pCount
+%         pPilots;
     end
     
     methods
@@ -27,14 +30,20 @@ classdef QPSKBitsGen < matlab.System
     
     methods (Access=protected)
         function setupImpl(obj, ~)
-            bbc = [+1 +1 +1 +1 +1 -1 -1 +1 +1 -1 +1 -1 +1]; % Bipolar Barker Code
-            ubc = ((bbc + 1) / 2)'; % Unipolar Barker Code
-            temp = (repmat(ubc,1,2))';
-            obj.pHeader = temp(:);
+            
+%             W = hadamard(obj.pLen);
+%             obj.pPilots = W(:, 1:obj.NumTxAntenna);
+            
+            
+%             bbc = [+1 +1 +1 +1 +1 -1 -1 +1 +1 -1 +1 -1 +1]; % Bipolar Barker Code
+%             ubc = ((bbc + 1) / 2)'; % Unipolar Barker Code
+%             temp = (repmat(ubc,1,2))';
+%             obj.pHeader = temp(:);
             obj.pCount = 0;
             obj.pScrambler = comm.Scrambler(obj.ScramblerBase, ...
                 obj.ScramblerPolynomial, obj.ScramblerInitialConditions);
-            obj.pMsgStrSet = ['Hello world 000';...
+            obj.pMsgStrSet = ...
+             ['Hello world 000';...
               'Hello world 001';...
               'Hello world 002';...
               'Hello world 003';...
@@ -149,7 +158,8 @@ classdef QPSKBitsGen < matlab.System
             scrambledData = obj.pScrambler(data);
             
             % Append the scrambled bit sequence to the header
-            y = [obj.pHeader ; scrambledData];
+%             y = [obj.pHeader; obj.pPilots; scrambledData];
+            y = scrambledData;
             
             obj.pCount = obj.pCount+1;
         end

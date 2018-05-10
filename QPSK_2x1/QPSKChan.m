@@ -57,10 +57,10 @@ classdef QPSKChan < matlab.System
          end
         
         
-        function corruptSignal = stepImpl(obj, TxSignal, count)
+        function [corruptSignal, H] = stepImpl(obj, TxSignal, count)
             
             % MIMO channel
-            [MIMOsig, H] = obj.pMIMOChannel(TxSignal);
+            [MIMOsig,H] = obj.pMIMOChannel(TxSignal);
             
             % Calculates the delay 
             if strcmp(obj.DelayType,'Ramp')
@@ -79,14 +79,18 @@ classdef QPSKChan < matlab.System
             end
             
             % Signal undergoes phase/frequency offset
-            rotatedSignal = obj.pPhaseFreqOffset(MIMOsig);
+            rotatedSignal1 = obj.pPhaseFreqOffset(MIMOsig(:,1));
+            rotatedSignal2 = obj.pPhaseFreqOffset(MIMOsig(:,2));
 %             rotatedSignal = obj.pPhaseFreqOffset(TxSignal);
             
             % Delayed signal
-            delayedSignal = obj.pVariableTimeDelay(rotatedSignal, delay);
+            delayedSignal1 = obj.pVariableTimeDelay(rotatedSignal1, delay);
+            delayedSignal2 = obj.pVariableTimeDelay(rotatedSignal2, delay);
             
             % Signal passing through AWGN channel
-            corruptSignal = obj.pAWGNChannel(delayedSignal);
+            corruptSignal1 = obj.pAWGNChannel(delayedSignal1);
+            corruptSignal2 = obj.pAWGNChannel(delayedSignal2);
+            corruptSignal = [corruptSignal1,corruptSignal2];
             
         end
         

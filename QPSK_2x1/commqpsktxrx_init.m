@@ -1,7 +1,10 @@
 function SimParams = commqpsktxrx_init
 % Set simulation parameters
 
-% Copyright 2011-2015 The MathWorks, Inc.
+% MIMO parameters
+SimParams.NumTxAntenna = 2;
+SimParams.NumRxAntenna = 2;
+SimParams.pLen = 8;
 
 % load commqpsktxrx_sbits_100.mat; % length 174
 % General simulation parameters
@@ -14,7 +17,7 @@ SimParams.FrameSize = 100; % Number of modulated symbols per frame
 
 % Tx parameters
 SimParams.BarkerLength = 13; % Number of Barker code symbols
-SimParams.DataLength = (SimParams.FrameSize - SimParams.BarkerLength)*2; % Number of data payload bits per frame
+SimParams.DataLength = (SimParams.FrameSize - SimParams.BarkerLength)*2-SimParams.pLen; % Number of data payload bits per frame
 SimParams.ScramblerBase = 2;
 SimParams.ScramblerPolynomial = [1 1 1 0 1];
 SimParams.ScramblerInitialConditions = [0 0 0 0];
@@ -60,3 +63,4 @@ SimParams.TransmitterFilterCoefficients = ...
 SimParams.ReceiverFilterCoefficients = ...
   rcosdesign(SimParams.Rolloff, SimParams.RaisedCosineFilterSpan, ...
   SimParams.Upsampling);
+

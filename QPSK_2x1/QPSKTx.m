@@ -12,6 +12,8 @@ classdef QPSKTx < matlab.System
         ScramblerBase = 2;
         ScramblerPolynomial = [1 1 1 0 1];
         ScramblerInitialConditions = [0 0 0 0];
+        NumTxAntenna = 2;
+        pLen = 8;
     end
     
      properties (Access=private)
@@ -19,6 +21,8 @@ classdef QPSKTx < matlab.System
         pQPSKModulator 
         pTransmitterFilter
         pMIMOEncoder
+        pBarkerCode
+        pModulatedHeader
     end
     
     methods
@@ -39,7 +43,13 @@ classdef QPSKTx < matlab.System
                 'PhaseOffset', pi/4);
             obj.pTransmitterFilter = dsp.FIRInterpolator(obj.UpsamplingFactor, ...
                 obj.TransmitterFilterCoefficients);
+            
+            % MIMO
             obj.pMIMOEncoder = comm.OSTBCEncoder;
+            obj.pMIMOEncoder.NumTransmitAntennas = obj.NumTxAntenna;
+            
+            obj.pBarkerCode = [+1; +1; +1; +1; +1; -1; -1; +1; +1; -1; +1; -1; +1]; % Bipolar Barker Code        
+            obj.pModulatedHeader = sqrt(2)/2 * (-1-1i) * QPSKTx.pBarkerCode;
         end
         
         function transmittedSignal = stepImpl(obj)

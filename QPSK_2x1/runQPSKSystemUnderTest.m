@@ -62,8 +62,8 @@ qpskRx.PrintOption = printData;
 
 for count = 1:prmQPSKTxRx.FrameCount
     transmittedSignal = qpskTx(); % Transmitter
-    corruptSignal = qpskChan(transmittedSignal, count); % AWGN Channel
-    [RCRxSignal,coarseCompBuffer, timingRecBuffer,BER] = qpskRx(corruptSignal); % Receiver
+    [corruptSignal,MIMOH] = qpskChan(transmittedSignal, count); % AWGN Channel
+    [RCRxSignal,coarseCompBuffer, timingRecBuffer,BER] = qpskRx(corruptSignal, MIMOH); % Receiver
     if useScopes
         runQPSKScopes(qpskScopes,RCRxSignal,coarseCompBuffer, timingRecBuffer); % Plots all the scopes
     end
