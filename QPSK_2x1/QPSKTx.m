@@ -16,13 +16,14 @@ classdef QPSKTx < matlab.System
         pLen = 8;
     end
     
-     properties (Access=private)
+    properties (Access=private)
         pBitGenerator
         pQPSKModulator 
         pTransmitterFilter
         pMIMOEncoder
-        pBarkerCode
+        pBarkerCode = [+1; +1; +1; +1; +1; -1; -1; +1; +1; -1; +1; -1; +1]; % Bipolar Barker Code
         pModulatedHeader
+        pPilots
     end
     
     methods
@@ -47,9 +48,11 @@ classdef QPSKTx < matlab.System
             % MIMO
             obj.pMIMOEncoder = comm.OSTBCEncoder;
             obj.pMIMOEncoder.NumTransmitAntennas = obj.NumTxAntenna;
+           
+            obj.pModulatedHeader = sqrt(2)/2 * (-1-1i) * obj.pBarkerCode;
             
-            obj.pBarkerCode = [+1; +1; +1; +1; +1; -1; -1; +1; +1; -1; +1; -1; +1]; % Bipolar Barker Code        
-            obj.pModulatedHeader = sqrt(2)/2 * (-1-1i) * QPSKTx.pBarkerCode;
+            W = hadamard(obj.pLen);
+            obj.pPilots = W(:, 1:obj.NumTxAntenna);
         end
         
         function transmittedSignal = stepImpl(obj)
@@ -57,8 +60,9 @@ classdef QPSKTx < matlab.System
             [transmittedData, ~] = obj.pBitGenerator();                % Generates the data to be transmitted           
             modulatedData = obj.pQPSKModulator(transmittedData);       % Modulates the bits into QPSK symbols
             MIMOData = obj.pMIMOEncoder(modulatedData);
-            transmittedSignal1 = obj.pTransmitterFilter(MIMOData(:,1));
-            transmittedSignal2 = obj.pTransmitterFilter(MIMOData(:,2));
+            DataWithHeader = [repmat(obj.pModulatedHeader,1,2); obj.pPilots; MIMOData];
+            transmittedSignal1 = obj.pTransmitterFilter(DataWithHeader(:,1));
+            transmittedSignal2 = obj.pTransmitterFilter(DataWithHeader(:,2));
             transmittedSignal = [transmittedSignal1,transmittedSignal2];
 %             transmittedSignal = obj.pTransmitterFilter(modulatedData); % Square root Raised Cosine Transmit Filter
         end
