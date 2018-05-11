@@ -23,6 +23,9 @@ classdef QPSKRx < matlab.System
         DescramblerPolynomial = [1 1 1 0 1];
         DescramblerInitialConditions = [0 0 0 0];
         PrintOption = false;
+        
+        pLen = 8;
+        NumRxAntenna = 2;
     end
     
     properties (Access = private)
@@ -36,6 +39,7 @@ classdef QPSKRx < matlab.System
         pFrameSync
         pDataDecod
         pBER
+        
         pMIMODecoder
      end
     
@@ -52,7 +56,7 @@ classdef QPSKRx < matlab.System
     end
     
     methods (Access = protected)
-        function setupImpl(obj, ~)
+        function setupImpl(obj, ~, ~)
             obj.pAGC = comm.AGC;
 
             obj.pRxFilter = dsp.FIRDecimator( ...
@@ -103,13 +107,15 @@ classdef QPSKRx < matlab.System
                 'PrintOption', obj.PrintOption);
             
             obj.pMIMODecoder = comm.OSTBCCombiner;
+            obj.pMIMODecoder.NumReceiveAntennas = obj.NumRxAntenna;
         end
                 
-        function [RCRxSignal, fineCompSignal, timingRecBuffer,BER] = stepImpl(obj, bufferSignal)
+        function [RCRxSignal, fineCompSignal, timingRecBuffer,BER] = stepImpl(obj, bufferSignal, H)
             
-            MIMOsignal = obj.pMIMODecoder(bufferSignal);
+            MIMOsignal = obj.pMIMODecoder(bufferSignal(obj.pLen*4+1:end,:),squeeze(H(obj.pLen*4+1:end,:,:,:)));
+            AGCSignal = obj.DesiredAmplitude*obj.pAGC(MIMOsignal);
             
-            AGCSignal = obj.DesiredAmplitude*obj.pAGC(bufferSignal);     % AGC control          
+%             AGCSignal = obj.DesiredAmplitude*obj.pAGC(bufferSignal);     % AGC control          
             RCRxSignal = obj.pRxFilter(AGCSignal);                       % Pass the signal through 
                                                                          % Square-Root Raised Cosine Received Filter           
             freqOffsetEst = obj.pCoarseFreqEstimator(RCRxSignal);        % Coarse frequency offset estimation            

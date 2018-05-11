@@ -13,7 +13,7 @@ SimParams.Upsampling = 4; % Upsampling factor
 SimParams.Downsampling = 2; % Downsampling factor
 SimParams.Fs = 2e5; % Sample rate in Hertz
 SimParams.Ts = 1/SimParams.Fs; % Sample time in sec
-SimParams.FrameSize = 100; % Number of modulated symbols per frame
+SimParams.FrameSize = 101; % Number of modulated symbols per frame
 
 % Tx parameters
 SimParams.BarkerLength = 13; % Number of Barker code symbols

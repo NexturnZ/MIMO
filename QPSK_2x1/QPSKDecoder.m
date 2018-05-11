@@ -12,6 +12,7 @@ classdef QPSKDecoder < matlab.System
         DescramblerPolynomial = [1 1 1 0 1];
         DescramblerInitialConditions = [0 0 0 0];
         PrintOption = false;
+        pLen = 2;
     end
     
     properties (Access = private)
@@ -60,13 +61,15 @@ classdef QPSKDecoder < matlab.System
             phShiftedData = data .* exp(-1i*phaseEst);
 
             % Demodulating the phase recovered data
-            demodOut = obj.pQPSKDemodulator(phShiftedData);
+%             demodOut = obj.pQPSKDemodulator(phShiftedData);
+            demodOut = obj.pQPSKDemodulator(phShiftedData(obj.ModulationOrder+obj.pLen:end));
             
             % Performs descrambling
-            deScrData = obj.pDescrambler( ...
-                demodOut( ...
-                obj.BarkerLength*log2(obj.ModulationOrder)+1 : ...
-                obj.FrameSize*log2(obj.ModulationOrder)));
+%             deScrData = obj.pDescrambler( ...
+%                 demodOut( ...
+%                 obj.BarkerLength*log2(obj.ModulationOrder)+1 : ...
+%                 obj.FrameSize*log2(obj.ModulationOrder)));
+            deScrData = obj.pDescrambler(demodOut);
             
             % Recovering the message from the data
             Received = deScrData(1:obj.MessageLength);
