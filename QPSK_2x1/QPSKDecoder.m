@@ -54,15 +54,8 @@ classdef QPSKDecoder < matlab.System
         end
         
         function  BER = stepImpl(obj, data)            
-            % Phase offset estimation
-            phaseEst = round(angle(mean(conj(obj.pModulatedHeader) .* data(1:obj.BarkerLength)))*2/pi)/2*pi;
-            
-            % Compensating for the phase offset
-            phShiftedData = data .* exp(-1i*phaseEst);
 
-            % Demodulating the phase recovered data
-%             demodOut = obj.pQPSKDemodulator(phShiftedData);
-            demodOut = obj.pQPSKDemodulator(phShiftedData(obj.ModulationOrder+obj.pLen:end));
+            demodOut = obj.pQPSKDemodulator(data);
             
             % Performs descrambling
 %             deScrData = obj.pDescrambler( ...

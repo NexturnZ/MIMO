@@ -112,26 +112,13 @@ classdef QPSKRx < matlab.System
                 
         function [RCRxSignal, fineCompSignal, timingRecBuffer,BER] = stepImpl(obj, bufferSignal, H)
             
-            MIMOsignal = obj.pMIMODecoder(bufferSignal(obj.pLen*4+1:end,:),squeeze(H(obj.pLen*4+1:end,:,:,:)));
-            AGCSignal = obj.DesiredAmplitude*obj.pAGC(MIMOsignal);
+            MIMOsignal = obj.pMIMODecoder(bufferSignal(obj.pLen+1:end,:),squeeze(H(obj.pLen+1:end,:,:,:)));
+            RCRxSignal = MIMOsignal;
+            fineCompSignal = MIMOsignal;
+            timingRecBuffer = MIMOsignal;
             
-%             AGCSignal = obj.DesiredAmplitude*obj.pAGC(bufferSignal);     % AGC control          
-            RCRxSignal = obj.pRxFilter(AGCSignal);                       % Pass the signal through 
-                                                                         % Square-Root Raised Cosine Received Filter           
-            freqOffsetEst = obj.pCoarseFreqEstimator(RCRxSignal);        % Coarse frequency offset estimation            
-            coarseCompSignal = obj.pCoarseFreqCompensator(RCRxSignal,...
-                -freqOffsetEst);                                         % Coarse frequency compensation            
-            fineCompSignal = obj.pFineFreqCompensator(coarseCompSignal); % Fine frequency compensation           
-            [timingRecSignal, timingRecBuffer] = ...                     % Symbol timing recovery
-                obj.pTimingRec(fineCompSignal);
-            [prbIdx, dtMt] = obj.pPrbDet(timingRecSignal);               % Detect frame header
-            [symFrame, isFrameValid] = obj.pFrameSync(timingRecSignal, ...
-                prbIdx, dtMt);                                           % Frame synchronization
+            obj.pBER = obj.pDataDecod(MIMOsignal);
 
-            if isFrameValid         % Decode frame of symbols
-                obj.pBER = obj.pDataDecod(symFrame);
-            end
-            
             BER = obj.pBER;
         end
         

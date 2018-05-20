@@ -3,9 +3,9 @@ dbstop if error;
 %% Initialization
 
 prmQPSKTxRx = commqpsktxrx_init; % QPSK system parameters 
-
+prmQPSKTxRx.EbNo = 3;
 useScopes = false; % true if scopes are to be used
-printReceivedData = false; %true if the received data is to be printed
+printReceivedData = true; %true if the received data is to be printed
 compileIt = false; % true if code is to be compiled
 useCodegen = false; % true to run the generated mex file
 %% Execution and Results

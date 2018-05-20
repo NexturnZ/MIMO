@@ -59,43 +59,10 @@ classdef QPSKChan < matlab.System
         
         function [corruptSignal, H] = stepImpl(obj, TxSignal, count)
             
-            % Calculates the delay 
-            if strcmp(obj.DelayType,'Ramp')
-                delay = ...
-                    min(((count - 1) * obj.pDelayStepSize + obj.pDelayMinimum), ...
-                    (obj.FrameSize-obj.RaisedCosineFilterSpan) ...
-                    *obj.UpsamplingFactor); % Variable delay taking the form of a ramp
-            else
-                % Variable delay taking the shape of a triangle
-                index = mod(count-1,2*obj.pDelayMaximum/obj.pDelayStepSize);
-                if index <= obj.pDelayMaximum/obj.pDelayStepSize
-                    delay = index * obj.pDelayStepSize;
-                else
-                    delay = 2*obj.pDelayMaximum - index * obj.pDelayStepSize;
-                end
-            end
-            
-            % Signal undergoes phase/frequency offset
-%             rotatedSignal1 = obj.pPhaseFreqOffset(MIMOsig(:,1));
-%             rotatedSignal2 = obj.pPhaseFreqOffset(MIMOsig(:,2));
-            rotatedSignal = obj.pPhaseFreqOffset(TxSignal);
-            
-            % Delayed signal
-%             delayedSignal1 = obj.pVariableTimeDelay(rotatedSignal1, delay);
-%             delayedSignal2 = obj.pVariableTimeDelay(rotatedSignal2, delay);
-            delayedSignal = obj.pVariableTimeDelay(rotatedSignal, delay);
-            
-            % Signal passing through AWGN channel
-%             corruptSignal1 = obj.pAWGNChannel(delayedSignal1);
-%             corruptSignal2 = obj.pAWGNChannel(delayedSignal2);
-%             corruptSignal = [corruptSignal1,corruptSignal2];
-            
-            corruptSignal = obj.pAWGNChannel(delayedSignal);
-            
             
             % MIMO channel
-            [MIMOsig,H] = obj.pMIMOChannel(corruptSignal);
-            corruptSignal = MIMOsig;
+            [MIMOsig,H] = obj.pMIMOChannel(TxSignal);
+            corruptSignal = obj.pAWGNChannel(MIMOsig);
             
         end
         

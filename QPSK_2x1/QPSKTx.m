@@ -61,13 +61,7 @@ classdef QPSKTx < matlab.System
             modulatedData = obj.pQPSKModulator(transmittedData);       % Modulates the bits into QPSK symbols
             MIMOData = obj.pMIMOEncoder(modulatedData);
             
-%             DataWithHeader = [repmat(obj.pModulatedHeader,1,2); obj.pPilots; MIMOData];
-            DataWithHeader = [obj.pPilots; repmat(obj.pModulatedHeader,1,2); MIMOData];
-            
-            transmittedSignal1 = obj.pTransmitterFilter(DataWithHeader(:,1));
-            transmittedSignal2 = obj.pTransmitterFilter(DataWithHeader(:,2));
-            transmittedSignal = [transmittedSignal1,transmittedSignal2];
-%             transmittedSignal = obj.pTransmitterFilter(modulatedData); % Square root Raised Cosine Transmit Filter
+            transmittedSignal = [obj.pPilots; MIMOData];
         end
         
         function resetImpl(obj)
